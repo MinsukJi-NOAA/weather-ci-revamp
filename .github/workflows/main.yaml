@@ -19,12 +19,16 @@ jobs:
         include:
           - test: global
             case: std
+            artifact: std
           - test: global
             case: dbg
+            artifact: dbg
           - test: regional
             case: std
+            artifact: std
           - test: coupled
             case: bit
+            artifact: bit
 
     steps:
       - name: echo
