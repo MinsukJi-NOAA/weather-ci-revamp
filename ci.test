@@ -1,4 +1,4 @@
 fv3_control
-thr dcp dbg
+thr mpi dcp rst bit dbg
 fv3_regional_control
-dbg bit
+thr mpi dcp rst
