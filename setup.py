@@ -21,9 +21,9 @@ def main():
       test = tests[i]
       case = cases[i][j]
 
-      if 'thr' in case or 'mpi' in case or 'dcp' in case or 'rst' in case:
+      if any(e in case for e in ['thr','mpi','dcp','rst']):
         std = test+'_std'
-        if not bj or not any([std in e for e in bj['bld_set']]):
+        if not bj or not any(std in e for e in bj['bld_set']):
           bj['bld_set'].append(std)
           bj['include'].append({'bld_set': std, 'name': test})
         aj = {'test_set': case, 'artifact': std, 'name': test}
