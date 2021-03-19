@@ -1,0 +1,100 @@
+name: Test
+
+on:
+  push:
+    branches: ['master']
+  pull_request:
+    branches: ['master']
+
+jobs:
+  setup:
+    name: Set up
+    runs-on: ubuntu-20.04
+
+    outputs:
+      bld: ${{ steps.parse.outputs.bld }}
+      test: ${{ steps.parse.outputs.test }}
+
+    steps:
+    - name: Checkout codes
+      uses: actions/checkout@v2
+
+    - name: Parse cases
+      id: parse
+      run: |
+        cd ${GITHUB_WORKSPACE}
+        IFS='|' parsed_output=( $(./setup.py) )
+        bld_=${parsed_output[0]}
+        test_=${parsed_output[1]}
+
+        echo "::set-output name=bld::$bld_"
+        echo "::set-output name=test::$test_"
+
+        echo "build set : $bld_"
+        echo "test set  : $test_"
+
+  build:
+    name: Build: ${{ matrix.bld_set }}
+    needs: setup
+    runs-on: ubuntu-20.04
+
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.setup.outputs.bld) }}
+
+    steps:
+    - name: Checkout codes
+      uses: actions/checkout@v2
+
+    - name: Build
+      run: echo ${{ matrix.bld_set }} ${{ matrix.name }}
+
+#    - name: Prepare artifacts
+#      run: |
+#        cd tests/ci
+#        sudo docker save ${{ needs.setup.outputs.img }} | gzip >${{ needs.setup.outputs.img }}.tar.gz
+#        tar cvjf artifact.tar.bz2 ${{ needs.setup.outputs.img }}.tar.gz ci.sh ci.test
+#
+#    - name: Upload artifacts
+#      uses: actions/upload-artifact@v2
+#      with:
+#        name: ${{ matrix.bld_set }}.artifact.tar.bz2
+#        path: tests/ci/artifact.tar.bz2
+
+  utest:
+    name: Test: ${{ matrix.test_set }}
+    needs: [setup,build]
+    runs-on: ubuntu-20.04
+
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.setup.outputs.test) }}
+
+    steps:
+#    - name: Download artifacts
+#      uses: actions/download-artifact@v2
+#      with:
+#        name: ${{ matrix.artifact }}.artifact.tar.bz2
+#
+#    - name: Prepare artifacts
+#      run: |
+#        tar xvjf artifact.tar.bz2 && rm -f artifact.tar.bz2
+#        docker load --input ${{ needs.setup.outputs.img }}.tar.gz && rm -f ${{ needs.setup.outputs.img }}.tar.gz
+
+    - name: Run utest
+      run: echo ${{ matrix.test_set }} ${{ matrix.name }} ${{ matrix.artifact }}
+
+#    - name: Upload memory usage file
+#      if: ${{ always() }}
+#      uses: actions/upload-artifact@v2
+#      with:
+#        name: memory_stat_${{ matrix.test_set }}
+#        path: memory_stat
+#
+#    - name: Clean up
+#      if: ${{ always() }}
+#      run: |
+#        rm -f ci.sh ci.test
+#        docker stop my-container && docker rm  my-container && docker rmi ${{ needs.setup.outputs.img }}:latest
+#        docker volume rm DataVolume
+#        rm -f memory_stat
