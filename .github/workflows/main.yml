@@ -51,7 +51,7 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Build
-      run: echo "build set: ${{ matrix.bld_set }}, test name: ${{ matrix.name }}" >myfile
+      run: echo "build set ${{ matrix.bld_set }}, test name ${{ matrix.name }}" >myfile
 
 #    - name: Prepare artifacts
 #      run: |
