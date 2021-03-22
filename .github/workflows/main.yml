@@ -23,7 +23,7 @@ jobs:
       id: parse
       run: |
         cd ${GITHUB_WORKSPACE}
-        IFS='|' parsed_output=( $(./setup.py) )
+        IFS='|'; parsed_output=( $(./setup.py) )
         bld_=${parsed_output[0]}
         test_=${parsed_output[1]}
         img_=ci-test-weather
