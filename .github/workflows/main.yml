@@ -26,12 +26,16 @@ jobs:
         IFS='|' parsed_output=( $(./setup.py) )
         bld_=${parsed_output[0]}
         test_=${parsed_output[1]}
+        img_=ci-test-weather
 
         echo "::set-output name=bld::$bld_"
         echo "::set-output name=test::$test_"
+        echo "::set-output name=img::$img_"
 
         echo "build set : $bld_"
         echo "test set  : $test_"
+        echo "image name: $img_"
+
 
   build:
     name: Build ${{ matrix.bld_set }}
@@ -47,17 +51,19 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Build
-      run: echo ${{ matrix.bld_set }} ${{ matrix.name }}
+      run: echo "build set: ${{ matrix.bld_set }}, test name: ${{ matrix.name }}" >myfile
 
 #    - name: Prepare artifacts
 #      run: |
 #        cd tests/ci
 #        sudo docker save ${{ needs.setup.outputs.img }} | gzip >${{ needs.setup.outputs.img }}.tar.gz
 #        tar cvjf artifact.tar.bz2 ${{ needs.setup.outputs.img }}.tar.gz ci.sh ci.test
-#
-#    - name: Upload artifacts
-#      uses: actions/upload-artifact@v2
-#      with:
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: ${{ matrix.bld_set }}
+        path: myfile
 #        name: ${{ matrix.bld_set }}.artifact.tar.bz2
 #        path: tests/ci/artifact.tar.bz2
 
@@ -71,18 +77,25 @@ jobs:
       matrix: ${{ fromJson(needs.setup.outputs.test) }}
 
     steps:
-#    - name: Download artifacts
-#      uses: actions/download-artifact@v2
-#      with:
+    - name: Download artifacts
+      uses: actions/download-artifact@v2
+      with:
+        name: ${{ matrix.artifact }}
 #        name: ${{ matrix.artifact }}.artifact.tar.bz2
-#
+
 #    - name: Prepare artifacts
 #      run: |
 #        tar xvjf artifact.tar.bz2 && rm -f artifact.tar.bz2
 #        docker load --input ${{ needs.setup.outputs.img }}.tar.gz && rm -f ${{ needs.setup.outputs.img }}.tar.gz
 
     - name: Run utest
-      run: echo ${{ matrix.test_set }} ${{ matrix.name }} ${{ matrix.artifact }}
+      run: |
+        echo ${{ matrix.test_set }} ${{ matrix.name }} ${{ matrix.artifact }}
+        echo "=============================================================="
+        ls -l
+        echo "=============================================================="
+        echo myfile
+        echo "=============================================================="
 
 #    - name: Upload memory usage file
 #      if: ${{ always() }}
